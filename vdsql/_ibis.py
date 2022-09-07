@@ -38,6 +38,7 @@ def dtype_to_vdtype(dtype):
         pass
     return anytype
 
+
 def _register_bigquery_connect():
     from ibis.backends.base import _connect
 

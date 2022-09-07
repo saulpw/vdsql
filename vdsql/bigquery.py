@@ -1,5 +1,6 @@
 from visidata import vd, VisiData, Sheet, AttrColumn
-from . import IbisTableIndexSheet, IbisConnectionPool, _register_bigquery_connect
+from . import IbisTableIndexSheet, IbisConnectionPool
+from ._ibis import _register_bigquery_connect
 
 import ibis
 import ibis.expr.operations as ops

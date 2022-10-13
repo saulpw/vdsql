@@ -4,10 +4,11 @@ import operator
 import re
 
 from contextlib import contextmanager
-from visidata import VisiData, Sheet, IndexSheet, vd, date, anytype, vlen, clipdraw, colors, stacktrace, PyobjSheet, BaseSheet, ExpectedException
+from visidata import VisiData, Sheet, IndexSheet, vd, date, anytype, vlen, clipdraw, colors, stacktrace, PyobjSheet, BaseSheet, ExpectedException, ColumnColorizer
 from visidata.pyobj import ExpandedColumn
 from visidata import ItemColumn, AttrColumn, Column, TextSheet, asyncthread, wrapply, ColumnsSheet, UNLOADED, ExprColumn, undoAttrCopyFunc, ENTER
 
+vd.option('color_ibis_cast', 'cyan', 'color of retyped ibis column')
 vd.option('disp_ibis_sidebar', '', 'which sidebar property to display')
 vd.option('sql_always_count', False, 'whether to include count of total number of results')
 vd.option('ibis_limit', 500, 'max number of rows to get in query')
@@ -192,6 +193,9 @@ class LazyIbisColMap:
 
 
 class IbisTableSheet(Sheet):
+    colorizers = [
+        ColumnColorizer(3, 'color_ibis_cast', lambda s,c,r,v: c and c.type is not c.source_type)
+    ]
     @property
     def con(self):
         return self.ibis_conpool.get_conn()
@@ -292,6 +296,7 @@ class IbisTableSheet(Sheet):
 
     def ibisCompileExpr(self, expr, q):
         if isinstance(expr, str):
+            vd.status(f'compiling {expr}')
             return eval(expr, vd.getGlobals(), LazyIbisColMap(self, q))
         else:
             return expr
@@ -364,6 +369,7 @@ class IbisTableSheet(Sheet):
 
             self.addColumn(IbisColumn(colname, i,
                            type=dtype_to_vdtype(dtype),
+                           source_type=dtype_to_vdtype(dtype),
                            keycol=keycol,
                            ibis_name=colname))
 
@@ -475,7 +481,8 @@ def get_ibis_col(col, query, typed=False):
     if r is None:
         return r
 
-    if typed:
+    if col.type is not col.source_type: # typed:
+        vd.status('different type for ' + col.name)
         import ibis.expr.datatypes as dt
         if col.type is str: r = r.cast(dt.string)
         if col.type is int: r = r.cast(dt.int)

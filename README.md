@@ -1,5 +1,7 @@
 # vdsql: [VisiData](https://visidata.org) for Databases
 
+# Note: vdsql has been moved into the [visidata mono-repo](https://github.com/saulpw/visidata)!  This repo is now defunct.
+
 A VisiData interface for databases
 
 Powered by [Ibis](https://ibis-project.org).
